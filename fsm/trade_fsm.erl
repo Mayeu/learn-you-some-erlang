@@ -24,7 +24,7 @@ trade(OwnPid, OtherPid) ->
 
 %% Accept someone's trade offer.
 accept_trade(OwnPid) ->
-   gen_fsm:send_event(OwnPid, accept_negotiate).
+   gen_fsm:sync_send_event(OwnPid, accept_negotiate).
 
 %% Send an item on the table to be traded
 make_offer(OwnPid, Item) ->
@@ -112,9 +112,9 @@ idle({ask_negotiate, OtherPid}, S=#state{}) ->
    Ref = monitor(process, OtherPid),
    notice(S, "~p asked for a trade negotiation", [OtherPid]),
    {next_state, idle_wait, S#state{other=OtherPid, monitor=Ref}};
-idle(Event, Date) ->
+idle(Event, Data) ->
    unexpected(Event, idle),
-   {next_state, idle, Date}.
+   {next_state, idle, Data}.
 
 idle({negotiate, OtherPid}, From, S=#state{}) ->
    ask_negotiate(OtherPid, self()),
@@ -127,6 +127,7 @@ idle(Event, _From, Data) ->
 
 idle_wait({ask_negotiate, OtherPid}, S=#state{other=OtherPid}) ->
    gen_fsm:reply(S#state.from, ok),
+   notice(S, "starting negotiation", []),
    {next_state, negotiate, S};
 %% The other side has accepted our offer. Move to negotiate state
 idle_wait({accept_negotiate, OtherPid}, S=#state{other=OtherPid}) ->
