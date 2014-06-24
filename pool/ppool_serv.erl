@@ -56,7 +56,7 @@ handle_call({sync, Args}, _From, S = #state{limit=N, sup=Sup, refs=R}) when N > 
    Ref = erlang:monitor(process, Pid),
    {reply, {ok,Pid}, S#state{limit=N-1, refs=gb_sets:add(Ref,R)}};
 handle_call({sync, Args}, From, S = #state{queue=Q}) ->
-   {norelpy, S#state{queue=queue:in({From, Args},Q)}};
+   {noreply, S#state{queue=queue:in({From, Args},Q)}};
 
 %% Call to stop
 handle_call(stop, _From, State) ->
